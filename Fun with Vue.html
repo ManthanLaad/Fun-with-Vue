@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+    />
+
+    <title>Interactive Waterdrop Canvas - Vue.js Web Animation</title>
+    <style>
+      body {
+        margin: 0;
+        cursor: pointer;
+        background: linear-gradient(to bottom, #000000, #333333);
+      }
+
+      canvas {
+        display: block;
+      }
+
+      #app {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+      }
+
+      footer {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 200px; /* Set the desired width for the footer */
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        text-align: center;
+        padding: 20px; /* Increase padding to make it bigger */
+        user-select: none;
+      }
+
+      footer p {
+        margin: 0;
+        font-size: 14px;
+      }
+      .fab.fa-github {
+        background-color: white;
+        border-radius: 50%; /* Optionally add border-radius for a circular background */
+      }
+
+      footer::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(
+          0,
+          0,
+          0,
+          0.2
+        ); /* Overlay background color with transparency */
+        pointer-events: none; /* Allow clicks to pass through the overlay to the content below */
+      }
+
+      /* Additional styles for mobile view */
+      @media screen and (max-width: 768px) {
+        footer {
+          position: fixed; /* Fixed position to keep it at the bottom */
+          width: 100%; /* Extend horizontally to full width */
+          text-align: center; /* Center text */
+          z-index: 1000; /* Ensure it's on top of other content */
+          background: rgba(0, 0, 0, 0.7); /* Darken the background */
+          padding: 10px; /* Reduce padding for mobile view */
+        }
+
+        /* Adjust font size for mobile view */
+        footer p {
+          font-size: 12px;
+        }
+
+        html,
+        body {
+          max-height: 100%;
+          overflow: hidden;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="canvas"></canvas>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+      <p>
+        Created by Manthan Laad
+        <a href="https://github.com/ManthanLaad" target="_blank"
+          ><i class="fab fa-github"></i
+        ></a>
+      </p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <script>
+      let lastClickTime = Date.now()
+
+      new Vue({
+        el: "#app",
+        data: {
+          canvas: null,
+          ctx: null,
+          ellipses: [],
+          maxRadius: 200,
+        },
+        mounted() {
+          this.canvas = document.getElementById("canvas")
+          this.ctx = this.canvas.getContext("2d")
+          this.setupCanvas()
+
+          window.addEventListener("resize", this.setupCanvas)
+
+          this.animate()
+
+          document.body.addEventListener("click", this.handlePageClick)
+
+          // Set a timer to simulate clicks if no actual clicks are made for 10 seconds
+          setInterval(this.simulateClick, 10000)
+        },
+        methods: {
+          setupCanvas() {
+            this.canvas.width = window.innerWidth
+            this.canvas.height = window.innerHeight
+          },
+          handlePageClick(event) {
+            lastClickTime = Date.now()
+
+            const canvasRect = this.canvas.getBoundingClientRect()
+            const clickX = event.clientX - canvasRect.left
+            const clickY = event.clientY - canvasRect.top
+
+            const newEllipse = {
+              x: clickX,
+              y: clickY,
+              radiusX: 10 + Math.random() * 20, // Adjust the values for a circular shape
+              radiusY: 10 + Math.random() * 20, // Adjust the values for a circular shape
+              color: this.getRandomColor(),
+              animationSpeedX: Math.random() * 2 + 1,
+              animationSpeedY: Math.random() * 1 + 0.5,
+            }
+
+            this.ellipses.push(newEllipse)
+          },
+          animate() {
+            const animateFrame = () => {
+              this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+
+              this.ellipses.forEach((ellipse) => {
+                const gradient = this.ctx.createRadialGradient(
+                  ellipse.x,
+                  ellipse.y,
+                  0,
+                  ellipse.x,
+                  ellipse.y,
+                  Math.max(ellipse.radiusX, ellipse.radiusY)
+                )
+
+                gradient.addColorStop(0, ellipse.color)
+                gradient.addColorStop(1, "transparent")
+
+                this.ctx.fillStyle = gradient
+                this.ctx.beginPath()
+                this.ctx.ellipse(
+                  ellipse.x,
+                  ellipse.y,
+                  ellipse.radiusX,
+                  ellipse.radiusY,
+                  0,
+                  0,
+                  Math.PI * 2
+                )
+                this.ctx.fill()
+
+                ellipse.radiusX += ellipse.animationSpeedX
+                ellipse.radiusY += ellipse.animationSpeedY
+              })
+
+              requestAnimationFrame(animateFrame)
+            }
+
+            animateFrame()
+          },
+          createRandomEllipse() {
+            const canvasRect = this.canvas.getBoundingClientRect()
+            const randomX = Math.random() * this.canvas.width
+            const randomY = Math.random() * this.canvas.height
+
+            const newEllipse = {
+              x: randomX,
+              y: randomY,
+              radiusX: 10 + Math.random() * 20, // Adjust the values for a circular shape
+              radiusY: 10 + Math.random() * 20, // Adjust the values for a circular shape
+              color: this.getRandomColor(),
+              animationSpeedX: Math.random() * 2 + 1,
+              animationSpeedY: Math.random() * 1 + 0.5,
+            }
+
+            this.ellipses.push(newEllipse)
+          },
+          getRandomColor() {
+            const letters = "0123456789ABCDEF"
+            let color = "#"
+            for (let i = 0; i < 6; i++) {
+              color += letters[Math.floor(Math.random() * 16)]
+            }
+            return color
+          },
+          // Function to simulate a click event at a random position
+          // Function to simulate a random number of clicks (1 to 5) at random positions
+          simulateClick() {
+            const numberOfClicks = Math.floor(Math.random() * 5) + 1 // Generate a random number between 1 and 5
+
+            for (let i = 0; i < numberOfClicks; i++) {
+              const randomX = Math.random() * this.canvas.width
+              const randomY = Math.random() * this.canvas.height
+
+              const event = new MouseEvent("click", {
+                clientX: randomX,
+                clientY: randomY,
+              })
+
+              document.body.dispatchEvent(event)
+            }
+          },
+        },
+      })
+    </script>
+  </body>
+</html>
