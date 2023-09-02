@@ -101,6 +101,21 @@
           max-height: 100%;
           overflow: hidden;
         }
+
+        /* Check if the device is in landscape mode */
+        @media screen and (orientation: landscape) {
+          footer {
+            bottom: 0; /* Position the footer at the bottom */
+            right: 0; /* Position the footer at the right */
+            width: auto; /* Allow the footer to adjust its width */
+            padding: 2px;
+            display: inline-block;
+          }
+          /* Prevent scroll bars and maintain window size in both portrait and landscape modes */
+          body {
+            overflow: hidden;
+          }
+        }
       }
     </style>
   </head>
